@@ -10,6 +10,8 @@ var NIGHT= 6
 var coinGroup, coin
 var happyImage,darkImage,obstacle,monster,obstacleImage, monsterImage,monsterGroup
 var gameState = SERVE;
+var min
+var backgroundImg
 function preload() {
   unicorn3Image= loadImage(" unicorn.png")
   coinImage=loadImage("coin.png")
@@ -17,7 +19,7 @@ function preload() {
    happyImage=loadImage("happy.png")
    obstacleImage= loadImage("obstacle.png");
    monsterImage= loadImage ("monster.png")
-  
+   getBackgroundImg();
 }
 
 function setup(){
@@ -36,27 +38,14 @@ function setup(){
 }
 
 function draw(){
- 
-
-  background(happyImage);
+  getBackgroundImg();
+if(backgroundImg)
+  background(backgroundImg);
   ground.visible= false;
     
   unicorn.collide(ground);
 
-  async function getBackgroundImg(){
-    var response = await fetch("http://worldtimeapi.org/api/timezone/Asia/Kolkata");
-    var responseJSON = await response.json();
-
-    var datetime = responseJSON.datetime;
-    
-    if(min%1===0){
-        bg = "happy.png";
-
-    }
-    else{
-        bg = "dark.png";
-     
-      }}
+  
   if(gameState === SERVE){
     stroke("black");
     textSize(20);
@@ -67,20 +56,47 @@ function draw(){
       gameState = PLAY;
     }}
     if(gameState === PLAY){
-      if(unicorn.isTouching(coinGroup)){
-      coinGroup.destroyEach();
-      score = score + 1;       
-      
-     }
+     
+     
     
      
      if (gameState=== NIGHT){
 
 enemy();
-     }
 
-     gold();
-      obstacles();
+if(unicorn.isTouching(monsterGroup)){
+ score=score-3
+ monsterGroup.destroyEach()
+}
+     }
+if(gameState===DAY){
+
+  gold();
+  obstacles();
+  if(unicorn.isTouching(coinGroup)){
+    coinGroup.destroyEach();
+    score = score + 1;       
+     coin.velocityX=-(8+3*score/5)}
+
+  if(score<=0){
+    gameState=END;
+  }
+  if(unicorn.isTouching(obstacleGroup)){
+    
+    chances = chances - 1;
+    obstacleGroup.destroyEach();}
+   
+
+    if(chances === 0){
+      gameState = END;
+
+     
+    }
+}
+
+
+
+    
       
 
      stroke("black");
@@ -99,42 +115,28 @@ enemy();
         }
         unicorn.velocityY = unicorn.velocityY + 1.5;
         
-        if(unicorn.isTouching(monsterGroup)){
-           score=score-3
-          monsterGroup.destroyEach()
-         }
-        if(score<=0){
-          gameState=END;
-        }
-        if(unicorn.isTouching(obstacleGroup)){
-          
-          chances = chances - 1;
-          obstacleGroup.destroyEach();}
-         
-      
-          if(chances === 0){
-            gameState = END;
-          }
+        
       }
       else if(gameState === END){
-    
-  
+
+
         obstacleGroup.setVelocityXEach(0);
-   
+      
         obstacleGroup.setLifetimeEach(-1);
         
         coinGroup.setVelocityXEach(0);
-  
+      
         coinGroup.setLifetimeEach(-1);
         
         ground.velocityX = 0;
-      }
+       
       
+      }
 
       drawSprites()
 }
 function gold() {
-  if(frameCount % 170 === 0){
+  if(frameCount % 70 === 0){
   
     coin= createSprite(displayWidth,displayHeight-130,40,10);
     
@@ -154,7 +156,7 @@ function gold() {
 
 function obstacles() {
   if(frameCount % 100 === 0 ){
-                     
+     console.log("Hi")                
     obstacle = createSprite(displayWidth,displayHeight-120,10,10);
 
     obstacle.addImage(obstacleImage);
@@ -163,7 +165,7 @@ function obstacles() {
 
     obstacle.lifetime = 200;
  
-    obstacle.scale = 0.;
+    obstacle.scale = 0.3;
     
     obstacleGroup.add(obstacle);
   }
@@ -186,4 +188,23 @@ function enemy() {
   }
 }
     
+async function getBackgroundImg(){
+  var response = await fetch("http://worldtimeapi.org/api/timezone/Asia/Kolkata");
+  var responseJSON = await response.json();
 
+  var datetime = responseJSON.datetime;
+  console.log(datetime)
+  min=datetime.slice(14,16)
+  console.log(min)
+  if(min%3===0){
+      bg = "dark.png";
+      gameState=NIGHT;
+
+  }
+  else{
+      bg = "happy.png";
+      gameState=DAY;
+   
+    }
+    backgroundImg = loadImage(bg);
+  }
