@@ -10,8 +10,11 @@ var NIGHT= 6
 var coinGroup, coin
 var happyImage,darkImage,obstacle,monster,obstacleImage, monsterImage,monsterGroup
 var gameState = SERVE;
-var min
-var backgroundImg
+var min,easy,easyImage,hard,hardImage,stars
+var backgroundImg,starsImage,stars2,stars2Image
+var gameState1=NIGHT
+var LEVEL=7
+
 function preload() {
   unicorn3Image= loadImage(" unicorn.png")
   coinImage=loadImage("coin.png")
@@ -19,11 +22,18 @@ function preload() {
    happyImage=loadImage("happy.png")
    obstacleImage= loadImage("obstacle.png");
    monsterImage= loadImage ("monster.png")
+   starsImage=loadImage("stars.gif")
+   stars2Image=loadImage("stars2.png")
+   easyImage=loadImage("easy.png")
+   hardImage=loadImage("hard.png")
    getBackgroundImg();
 }
 
 function setup(){
   createCanvas(displayWidth-50, displayHeight-30);
+   stars=createSprite(200,335,20,20);
+   stars.addImage(starsImage)
+   
   unicorn= createSprite(200,335,20,20)
   unicorn.addImage(unicorn3Image)
   unicorn.scale=0.3
@@ -35,18 +45,43 @@ function setup(){
    obstacleGroup=createGroup();
    monsterGroup=createGroup();
 
+   easy= createSprite(800,200,20,20)
+   easy.addImage(easyImage)
+   easy.scale=0.3
+ 
+   hard= createSprite(500,200,90,90)
+   hard.addImage(hardImage)
+   hard.scale=1
+   
+   
 }
 
 function draw(){
+ 
   getBackgroundImg();
 if(backgroundImg)
   background(backgroundImg);
   ground.visible= false;
-    
+ 
   unicorn.collide(ground);
+ console.log(gameState)
+if(score<=0){
+  gameState===END
+}
+ 
+ if(mousePressedOver(easy)){
+   coin.velocityX=-2
+   obstacle.velocityX=-3
+   easy.visibile=false
+   hard.visible=false
+ }
 
   
-  if(gameState === SERVE){
+
+  if(gameState === SERVE ){
+    
+    
+
     stroke("black");
     textSize(20);
     fill("black");
@@ -56,20 +91,21 @@ if(backgroundImg)
       gameState = PLAY;
     }}
     if(gameState === PLAY){
-     
+     easy.visibile=false
      
     
      
-     if (gameState=== NIGHT){
+     if (gameState1===NIGHT){
 
 enemy();
 
 if(unicorn.isTouching(monsterGroup)){
  score=score-3
  monsterGroup.destroyEach()
+ chances=chances-1
 }
      }
-if(gameState===DAY){
+if(gameState1 ===DAY){
 
   gold();
   obstacles();
@@ -174,7 +210,7 @@ function obstacles() {
 function enemy() {
   if(frameCount % 200 === 0 ){
                      
-    monster = createSprite(displayWidth,displayHeight-120,10,10);
+    monster = createSprite(displayWidth,displayHeight-120,20,10);
    
     monster.addImage(monsterImage);
  
@@ -182,28 +218,32 @@ function enemy() {
  
     monster.lifetime = 200;
    
-    monster.scale = 0.3;
+    monster.scale = 0.7;
    
     monsterGroup.add(monster);
   }
 }
-    
+    function level1(){
+      obstacle.velocityX= -3
+      coin.velocity=0
+    }
 async function getBackgroundImg(){
   var response = await fetch("http://worldtimeapi.org/api/timezone/Asia/Kolkata");
   var responseJSON = await response.json();
 
   var datetime = responseJSON.datetime;
-  console.log(datetime)
+  //console.log(datetime)
   min=datetime.slice(14,16)
-  console.log(min)
+  //console.log(min)
   if(min%3===0){
       bg = "dark.png";
-      gameState=NIGHT;
+     // bg="stars.gif"
+      gameState1=NIGHT;
 
   }
   else{
-      bg = "happy.png";
-      gameState=DAY;
+      bg = "happy.png"
+      gameState1=DAY;
    
     }
     backgroundImg = loadImage(bg);
